@@ -2,8 +2,8 @@
  * IMPORTANT: Replace these URLs with your deployed backend URL
  * when building the APK for production.
  */
-export const API_BASE_URL = 'http://192.168.0.103:5000'; // e.g. https://chat-backend.onrender.com
-export const SOCKET_URL = 'http://192.168.0.103:5000';    // same as API_BASE_URL
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.103:5000'; // e.g. https://chat-backend.onrender.com
+export const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.103:5000';    // same as API_BASE_URL
 
 export const COLORS = {
   background: '#0d1117',

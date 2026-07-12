@@ -8,6 +8,7 @@ import {
   Alert,
   RefreshControl,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +25,9 @@ export default function ChatListScreen() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   /* Fetch conversations from API */
   const fetchConversations = useCallback(async (isPullRefresh = false) => {
@@ -236,35 +240,92 @@ export default function ChatListScreen() {
       <TouchableOpacity
         style={styles.fab}
         onPress={async () => {
+          setModalVisible(true);
+          setUsersLoading(true);
           try {
             const res = await api.get('/api/chat/users');
-            const users = res.data.data || [];
-            if (users.length === 0) {
-              Alert.alert('No Users', 'No other users registered yet.');
-              return;
-            }
-
-            /* Show user picker */
-            const buttons = users.map((u) => ({
-              text: u.username + (u.online ? '  🟢' : ''),
-              onPress: () =>
-                navigation.navigate('Chat', {
-                  userId: u._id,
-                  username: u.username,
-                  online: u.online,
-                }),
-            }));
-            buttons.push({ text: 'Cancel', style: 'cancel' });
-
-            Alert.alert('Start a Chat', 'Select a user:', buttons);
+            setUsers(res.data.data || []);
           } catch (err) {
             Alert.alert('Error', 'Failed to load users.');
+          } finally {
+            setUsersLoading(false);
           }
         }}
         activeOpacity={0.8}
       >
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
+
+      {/* Modal for User List */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Start a Chat</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* User List */}
+            {usersLoading ? (
+              <View style={styles.modalLoading}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+              </View>
+            ) : (
+              <FlatList
+                data={users}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.userItem}
+                    onPress={() => {
+                      setModalVisible(false);
+                      navigation.navigate('Chat', {
+                        userId: item._id,
+                        username: item.username,
+                        online: item.online,
+                      });
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.avatarContainer}>
+                      <View style={styles.avatar}>
+                        <Text style={styles.avatarText}>
+                          {item.username?.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                      {item.online && <View style={styles.onlineDot} />}
+                    </View>
+                    <View style={styles.userInfo}>
+                      <Text style={styles.userItemName}>{item.username}</Text>
+                      <Text style={styles.userItemStatus}>
+                        {item.online ? 'Online' : 'Offline'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={
+                  <View style={styles.modalEmpty}>
+                    <Text style={styles.modalEmptyText}>No other users registered yet.</Text>
+                  </View>
+                }
+                contentContainerStyle={styles.modalList}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -452,5 +513,87 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     color: COLORS.sentText,
     lineHeight: 36,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    height: '70%',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  modalTitle: {
+    fontSize: SIZES.xl,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  closeButtonText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: 'bold',
+  },
+  userItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.border,
+  },
+  userInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  userItemName: {
+    fontSize: SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  userItemStatus: {
+    fontSize: SIZES.sm,
+    color: COLORS.textSecondary,
+  },
+  modalList: {
+    paddingVertical: 8,
+  },
+  modalLoading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  modalEmpty: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  modalEmptyText: {
+    color: COLORS.textSecondary,
+    fontSize: SIZES.md,
   },
 });
