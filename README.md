@@ -1,7 +1,8 @@
 # NOTE
+```
 The backend is hosted on render which will stop after inactive if any of team members are running please click on below link to start the backend server or else the user cant login please open this link if ur not running backend locally
 https://chat-app-backend-mr9a.onrender.com/api/health
-
+```
 # Chat App - React Native & Expo Frontend
 
 A premium real-time chat application frontend built with **React Native**, **Expo SDK 54**, and **Socket.io-client**. This app communicates with a Node.js/Socket.io backend (either running locally or hosted on Render) to deliver instant messaging, real-time online status indicators, and custom overlays.
