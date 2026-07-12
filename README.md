@@ -1,6 +1,7 @@
 # NOTE
 ```
-The backend is hosted on render which will stop after inactive if any of team members are running please click on below link to start the backend server or else the user cant login please open this link if ur not running backend locally
+The backend is hosted on render which will stop after inactive if any of team members are running
+please click on below link to start the backend server or else the user cant login please open this link if ur not running backend locally
 https://chat-app-backend-mr9a.onrender.com/api/health
 ```
 # Chat App - React Native & Expo Frontend
