@@ -24,9 +24,9 @@ Create a `.env` file in the root of the project (this is ignored by Git to prote
 ```env
 # URL of your backend (hosted on Render or running locally)
 EXPO_PUBLIC_API_URL=https://chat-app-backend-mr9a.onrender.com
+EXPO_PUBLIC_API_URL=http://192.168.0.103:5000  # for locally running the backend
 ```
 
-> 💡 **Tip:** If running a local backend for physical devices, set `EXPO_PUBLIC_API_URL` to your machine's local IP address (e.g., `http://192.168.1.50:5000`).
 
 ### 4. Start the Application
 Start the Metro bundler with cache clearing:
